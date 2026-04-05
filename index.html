@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Verification</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            background: #f4f6f8;
+            margin-top: 100px;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 350px;
+            margin: auto;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+        }
+
+        input {
+            padding: 10px;
+            width: 80%;
+            margin: 10px 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .result {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .genuine { color: green; }
+        .fake { color: red; }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Product Authenticity Check</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+    <input type="text" name="product_id" placeholder="Enter Product ID">
+    <br><br>
+    <input type="file" name="qr_image">
+    <br><br>
+    <button type="submit">Verify</button>
+    </form>
+
+    {% if result %}
+        <div class="result 
+        {% if 'Genuine' in result %}genuine{% else %}fake{% endif %}">
+            {{ result }}
+        </div>
+    {% endif %}
+</div>
+
+</body>
+</html>
