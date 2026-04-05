@@ -1,13 +1,16 @@
 from flask import Flask, render_template, request
 import sqlite3
 import os
+import time
+
+# QR imports (safe handling)
 try:
     from pyzbar.pyzbar import decode
     import cv2
+    import numpy as np
     QR_ENABLED = True
 except:
     QR_ENABLED = False
-import time
 
 app = Flask(__name__)
 
@@ -26,20 +29,6 @@ def check_product(product_id):
     return result
 
 
-# ✅ QR Scanner function
-def scan_qr(image_path):
-    if not QR_ENABLED:
-        return None
-
-    img = cv2.imread(image_path)
-    decoded_objects = decode(img)
-
-    for obj in decoded_objects:
-        return obj.data.decode("utf-8")
-
-    return None
-
-
 # ✅ Main route
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -55,28 +44,38 @@ def home():
 
         # 🔹 Case 2: QR upload
         elif 'qr_image' in request.files:
+            file = request.files['qr_image']
+
             if not QR_ENABLED:
                 result = "⚠ QR scanning not supported in deployed version"
                 return render_template('index.html', result=result)
-            file = request.files['qr_image']
 
-            if file.filename != "":
-                file_path = os.path.join(BASE_DIR, "temp.png")
-                file.save(file_path)
+            if file and file.filename != "":
+                try:
+                    # Read image directly (NO FILE SAVE)
+                    file_bytes = np.frombuffer(file.read(), np.uint8)
+                    img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
 
-                product_id = scan_qr(file_path)
+                    decoded_objects = decode(img)
 
-                if product_id:
-                    product_id = product_id.strip()
-                    print("Scanned QR:", product_id)
-                else:
-                    result = "❌ No QR code detected"
+                    if decoded_objects:
+                        product_id = decoded_objects[0].data.decode("utf-8").strip()
+                        print("Scanned QR:", product_id)
+                    else:
+                        result = "❌ No QR code detected"
+                        return render_template('index.html', result=result)
+
+                except Exception as e:
+                    print("QR Error:", e)
+                    result = "❌ QR processing failed"
                     return render_template('index.html', result=result)
 
         # 🔹 Check product
         if product_id:
             start = time.time()
+
             data = check_product(product_id)
+
             end = time.time()
             response_time = end - start
             print("Response time:", response_time)
