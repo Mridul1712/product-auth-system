@@ -63,7 +63,7 @@ auth-system/
    pip install -r requirements.txt
 3. python app.py
 4. http://127.0.0.1:5000
-
+5. Live Demo: https://product-auth-system.onrender.com
 🌐 Future Improvements
 📱 Real-time camera QR scanning
 ☁️ Cloud database integration
