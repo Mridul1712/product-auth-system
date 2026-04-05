@@ -1,8 +1,12 @@
 from flask import Flask, render_template, request
 import sqlite3
 import os
-from pyzbar.pyzbar import decode
-import cv2
+try:
+    from pyzbar.pyzbar import decode
+    import cv2
+    QR_ENABLED = True
+except:
+    QR_ENABLED = False
 import time
 
 app = Flask(__name__)
@@ -24,6 +28,9 @@ def check_product(product_id):
 
 # ✅ QR Scanner function
 def scan_qr(image_path):
+    if not QR_ENABLED:
+        return None
+
     img = cv2.imread(image_path)
     decoded_objects = decode(img)
 
@@ -48,6 +55,9 @@ def home():
 
         # 🔹 Case 2: QR upload
         elif 'qr_image' in request.files:
+            if not QR_ENABLED:
+                result = "⚠ QR scanning not supported in deployed version"
+                return render_template('index.html', result=result)
             file = request.files['qr_image']
 
             if file.filename != "":
